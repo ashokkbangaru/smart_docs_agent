@@ -1,21 +1,32 @@
-# SmartDocs AI: GenAI-Powered Knowledge Retrieval using RAG
+# SmartDocs AI: GenAI-Powered Knowledge Retrieval using Local Hugging Face Pipeline
+
+# Requirements (install before running):
+# pip install langchain langchain-community streamlit python-dotenv tiktoken sentence-transformers transformers accelerate unstructured python-docx
+
 import os
 from dotenv import load_dotenv
-from langchain.embeddings import OpenAIEmbeddings
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader
-from langchain.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQA
-from langchain.chat_models import ChatOpenAI
+from langchain_community.llms import HuggingFacePipeline
+from transformers import pipeline
 import streamlit as st
 
-# Load environment variables
+# Load environment variables (if needed for other keys)
 load_dotenv()
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
-# Initialize OpenAI Model
-llm = ChatOpenAI(model_name="gpt-4", temperature=0, openai_api_key=OPENAI_API_KEY)
+# Initialize Local Hugging Face Pipeline
+local_pipeline = pipeline(
+    "text2text-generation",
+    model="google/flan-t5-base",
+    max_length=512,
+    temperature=0.3
+)
 
-# Upload and parse PDF documents
+llm = HuggingFacePipeline(pipeline=local_pipeline)
+
+# Upload and parse documents
 def load_documents(mixed_folder):
     documents = []
     for filename in os.listdir(mixed_folder):
@@ -27,13 +38,13 @@ def load_documents(mixed_folder):
         elif filename.endswith(".docx"):
             loader = UnstructuredWordDocumentLoader(path)
         else:
-            continue  # Skip unsupported file types
+            continue
         documents.extend(loader.load())
     return documents
 
-# Vectorize documents
+# Vectorize documents using Hugging Face embeddings
 def create_vectorstore(documents):
-    embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     vectorstore = FAISS.from_documents(documents, embeddings)
     return vectorstore
 
@@ -45,13 +56,9 @@ def build_qa_chain(vectorstore):
 
 # Streamlit app
 st.set_page_config(page_title="SmartDocs AI")
-st.title("SmartDocs AI – RAG-based Knowledge Assistant")
+st.title("SmartDocs AI – RAG-based Knowledge Assistant (Local HF Pipeline)")
 
-uploaded_files = st.file_uploader(
-    "Upload PDF, TXT, or DOCX documents",
-    type=["pdf", "txt", "docx"],
-    accept_multiple_files=True
-)
+uploaded_files = st.file_uploader("Upload PDF, TXT, or DOCX documents", type=["pdf", "txt", "docx"], accept_multiple_files=True)
 
 if uploaded_files:
     temp_dir = "temp_docs"
@@ -78,4 +85,4 @@ if uploaded_files:
                 for doc in result['source_documents']:
                     st.markdown(f"- {doc.metadata['source']}")
 else:
-    st.info("Please upload PDF files to get started.")
+    st.info("Please upload PDF, TXT, or DOCX files to get started.")
