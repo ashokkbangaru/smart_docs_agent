@@ -1,10 +1,10 @@
 langchain
 langchain-community
-openai
-faiss-cpu
 streamlit
 python-dotenv
 tiktoken
 sentence-transformers
+transformers
+accelerate
 unstructured
 python-docx
