@@ -15,6 +15,7 @@ import streamlit as st
 
 # Load environment variables (if needed for other keys)
 load_dotenv()
+hf_token = st.secrets["HUGGINGFACEHUB_API_TOKEN"]
 
 # Initialize Local Hugging Face Pipeline
 local_pipeline = pipeline(
