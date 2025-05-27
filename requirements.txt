@@ -8,4 +8,4 @@ transformers
 accelerate
 unstructured
 python-docx
-torch==2.0.1+cpu
+torch
