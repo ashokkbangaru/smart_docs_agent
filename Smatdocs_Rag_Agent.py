@@ -1,8 +1,4 @@
 # SmartDocs AI: GenAI-Powered Knowledge Retrieval using Local Hugging Face Pipeline
-
-# Requirements (install before running):
-# pip install langchain langchain-community streamlit python-dotenv tiktoken sentence-transformers transformers accelerate unstructured python-docx
-
 import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, UnstructuredWordDocumentLoader
